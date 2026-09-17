@@ -1401,6 +1401,7 @@ $(call gb_LinkTarget_add_libs,$(1),\
 	$(if $(filter EMSCRIPTEN,$(OS)), \
 		$(gb_UnpackedTarball_workdir)/cairo/builddir/src/libcairo-lo.a \
 		$(gb_UnpackedTarball_workdir)/pixman/builddir/pixman/libpixman-1.a \
+		$(gb_UnpackedTarball_workdir)/freetype/instdir/lib/libfreetype.a \
 	, \
 		$(if $(filter WNT,$(OS)), \
 			$(WORKDIR)/LinkTarget/Library/icairo.lib \
