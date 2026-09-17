@@ -19,6 +19,8 @@
 
 #include <QtWidgets/qdrawutil.h>
 #include <QtWidgets/QApplication>
+#include <QtDocsStyle.hxx>
+#include <cstdio>
 
 void QtCustomStyle::drawPrimitive(PrimitiveElement element, const QStyleOption* option,
                                   QPainter* painter, const QWidget* widget) const
@@ -136,6 +138,19 @@ bool QtCustomStyle::IsSystemThemeChanged()
 
 void QtCustomStyle::LoadCustomStyle(bool bDarkMode)
 {
+#ifdef __EMSCRIPTEN__
+    // In the browser there is no desktop theme to follow: whatever style is
+    // installed *is* the look of the application. Use the flat one and stop --
+    // the palette dance below only makes sense against a system theme.
+    (void)bDarkMode;
+    if (!m_bIsCustomStyleSet)
+    {
+        QApplication::setPalette(QtDocsStyle::palette());
+        QApplication::setStyle(new QtDocsStyle);
+        m_bIsCustomStyleSet = true;
+    }
+    return;
+#else
     if (!ThemeColors::VclPluginCanUseThemeColors())
         return;
 
@@ -151,6 +166,7 @@ void QtCustomStyle::LoadCustomStyle(bool bDarkMode)
 
     QApplication::setStyle(new QtCustomStyle);
     m_bIsCustomStyleSet = true;
+#endif
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab cinoptions=b1,g0,N-s cinkeys+=0=break: */
