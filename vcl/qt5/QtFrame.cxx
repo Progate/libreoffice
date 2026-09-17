@@ -122,7 +122,20 @@ QtFrame::QtFrame(QtFrame* pParent, SalFrameStyleFlags nStyle)
             aWinFlags = Qt::Window;
     }
 
-    if (aWinFlags == Qt::Window)
+    // Careful: Qt::Dialog and friends contain the Qt::Window bit, so this has
+    // to stay an equality test. Any decoration hint is added after the branch
+    // has been decided.
+    const bool bTopLevelWindow = (aWinFlags == Qt::Window);
+
+#ifdef __EMSCRIPTEN__
+    // The canvas *is* the window: a title bar drawn inside it belongs to
+    // nothing the user can act on, and the page already provides whatever
+    // chrome there is.
+    if (bTopLevelWindow)
+        aWinFlags |= Qt::FramelessWindowHint;
+#endif
+
+    if (bTopLevelWindow)
     {
         m_pTopLevel = new QtMainWindow(*this, aWinFlags);
         m_pQWidget = new QtWidget(*this);
@@ -1093,6 +1106,54 @@ void QtFrame::UpdateSettings(AllSettings& rSettings)
         int nFlashTime = QApplication::cursorFlashTime();
         style.SetCursorBlinkTime(nFlashTime != 0 ? nFlashTime / 2 : STYLE_CURSOR_NOBLINKTIME);
         style.SetSystemColorsLoaded(true);
+
+#ifdef __EMSCRIPTEN__
+        // In the browser there is no desktop theme to imitate, and the beveled,
+        // high-contrast look of one reads as dated next to a web application.
+        // VCL paints toolbars, menus and frames itself -- the Qt style is only
+        // consulted for a handful of controls -- so the flat look has to be
+        // asked for here rather than in QStyle.
+        {
+            const Color aSurface(0xff, 0xff, 0xff);
+            const Color aSurfaceMuted(0xf1, 0xf3, 0xf4);
+            const Color aOutline(0xda, 0xdc, 0xe0);
+            const Color aAccent(0x1a, 0x73, 0xe8);
+            const Color aAccentMuted(0xe8, 0xf0, 0xfe);
+            const Color aText(0x20, 0x21, 0x24);
+
+            style.SetUseFlatBorders(true);
+            style.SetUseFlatMenus(true);
+
+            // Set3DColors derives light/shadow from one colour; giving it the
+            // surface colour is what removes the engraved edges.
+            style.Set3DColors(aSurface);
+            style.SetFaceColor(aSurface);
+            style.SetLightColor(aSurface);
+            style.SetLightBorderColor(aSurface);
+            style.SetShadowColor(aOutline);
+            style.SetDarkShadowColor(aOutline);
+
+            style.SetWindowColor(aSurface);
+            style.SetWindowTextColor(aText);
+            style.SetDialogColor(aSurface);
+            style.SetDialogTextColor(aText);
+            style.SetMenuBarColor(aSurface);
+            style.SetMenuColor(aSurface);
+            style.SetMenuBarTextColor(aText);
+            style.SetMenuTextColor(aText);
+            style.SetMenuBarRolloverColor(aSurfaceMuted);
+            style.SetMenuBarRolloverTextColor(aText);
+            style.SetMenuHighlightColor(aAccentMuted);
+            style.SetMenuHighlightTextColor(aText);
+
+            style.SetHighlightColor(aAccent);
+            style.SetHighlightTextColor(aSurface);
+            style.SetActiveColor(aSurface);
+            style.SetActiveTextColor(aText);
+            style.SetDeactiveColor(aSurface);
+            style.SetDeactiveTextColor(aText);
+        }
+#endif
 
         rSettings.SetStyleSettings(style);
     });
