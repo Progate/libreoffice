@@ -1298,7 +1298,10 @@ emscripten)
     enable_split_debug=yes
     enable_wasm_strip=yes
     with_system_zlib=no
-    with_theme="colibre"
+    # Only pin the icon theme when the caller did not ask for one: every theme
+    # adds a couple of megabytes to the payload, so the default stays at a
+    # single set, but --with-theme has to keep working.
+    test -z "$with_theme" && with_theme="colibre"
     _os=Emscripten
     ;;
 
