@@ -62,6 +62,14 @@ IconThemeSelector::IconThemeSelector()
             return u"colibre_dark"_ustr;
     }
 
+#ifdef __EMSCRIPTEN__
+    // There is no desktop to take a cue from, so the choice is ours. The
+    // monochrome set sits better next to a web page than the coloured one,
+    // and it is the theme the build bundles alongside the default.
+    (void)eDesktop;
+    return bPreferDarkIconTheme ? u"sifr_dark"_ustr : u"sifr"_ustr;
+#endif
+
 #ifdef _WIN32
     (void)eDesktop;
     if (!bPreferDarkIconTheme)
