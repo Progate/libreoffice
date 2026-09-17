@@ -1152,6 +1152,27 @@ void QtFrame::UpdateSettings(AllSettings& rSettings)
             style.SetActiveTextColor(aText);
             style.SetDeactiveColor(aSurface);
             style.SetDeactiveTextColor(aText);
+
+            // The area around the page. Keeping it a shade off white is what
+            // makes the page itself read as a sheet of paper.
+            style.SetWorkspaceColor(Color(0xf1, 0xf3, 0xf4));
+
+            // The UI font. Qt reports whatever the browser hands it, which is
+            // a serif on a bare canvas; pick one of the bundled sans faces so
+            // the result does not depend on what the host happens to have.
+            vcl::Font aUIFont = style.GetAppFont();
+            aUIFont.SetFamilyName(u"Carlito"_ustr);
+            style.BatchSetFonts(aUIFont, aUIFont);
+            vcl::Font aTitleFont(aUIFont);
+            aTitleFont.SetWeight(WEIGHT_BOLD);
+            style.SetTitleFont(aTitleFont);
+            style.SetFloatTitleFont(aTitleFont);
+
+            // The monochrome icon set. SetPreferredIconTheme only expresses a
+            // preference that the automatic choice may ignore, so set it
+            // outright -- the theme is bundled (see --with-theme).
+            style.SetPreferredIconTheme(u"sifr"_ustr, false);
+            style.SetIconTheme(u"sifr"_ustr);
         }
 #endif
 
