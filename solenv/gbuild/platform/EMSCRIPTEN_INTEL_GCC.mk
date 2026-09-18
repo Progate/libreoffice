@@ -15,16 +15,7 @@ gb_EMSCRIPTEN_CPPFLAGS := -pthread -s USE_PTHREADS=1 -D_LARGEFILE64_SOURCE -D_LA
 gb_EMSCRIPTEN_LDFLAGS := $(gb_EMSCRIPTEN_CPPFLAGS)
 
 # Initial memory size
-#
-# This is *also* the maximum: the module is linked with shared memory and no
-# growth, so the amount asked for here is baked into the wasm as the memory
-# import's maximum. Raising it from JavaScript (Module.INITIAL_MEMORY) does not
-# work -- instantiation fails with "memory import has a larger maximum size".
-#
-# 1GB is not enough to bring up a notebookbar: building one lays out seven tabs
-# worth of widgets and their images at once, and it ends in std::bad_alloc.
-# 1.5GB leaves room for that. Stay below 2GB -- pointers here are 32 bit.
-gb_EMSCRIPTEN_LDFLAGS += -s TOTAL_MEMORY=1536MB
+gb_EMSCRIPTEN_LDFLAGS += -s TOTAL_MEMORY=1GB
 
 ifeq ($(ENABLE_EMSCRIPTEN_PROXY_TO_PTHREAD),)
 gb_EMSCRIPTEN_LDFLAGS += -sPTHREAD_POOL_SIZE=7
