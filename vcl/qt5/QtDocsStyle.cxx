@@ -93,6 +93,17 @@ QPalette QtDocsStyle::palette()
     return aPalette;
 }
 
+int QtDocsStyle::styleHint(StyleHint hint, const QStyleOption* option, const QWidget* widget,
+                           QStyleHintReturn* returnData) const
+{
+    // The menu bar is drawn by Qt, not by VCL (QtMenu::VisibleMenuBar), so the
+    // underlined access keys come from here. They go with an Alt key that a
+    // browser does not have, so they mark something the reader cannot press.
+    if (hint == SH_UnderlineShortcut)
+        return 0;
+    return QProxyStyle::styleHint(hint, option, widget, returnData);
+}
+
 int QtDocsStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
                              const QWidget* widget) const
 {
@@ -191,7 +202,11 @@ void QtDocsStyle::drawControl(ControlElement element, const QStyleOption* option
             {
                 painter->save();
                 painter->setPen(option->state & State_Enabled ? aText : aTextDisabled);
-                painter->drawText(option->rect, Qt::AlignCenter | Qt::TextShowMnemonic,
+                // TextHideMnemonic, not TextShowMnemonic: this is the code that
+                // actually draws the menu bar, so answering SH_UnderlineShortcut
+                // elsewhere never reaches it. The '&' still marks the access key
+                // for Qt; it is only the underline that goes.
+                painter->drawText(option->rect, Qt::AlignCenter | Qt::TextHideMnemonic,
                                   pItem->text);
                 painter->restore();
             }
