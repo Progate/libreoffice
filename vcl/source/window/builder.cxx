@@ -1008,12 +1008,15 @@ void VclBuilderPreload()
 
 extern "C" VclBuilder::customMakeWidget lo_get_custom_widget_func(const char* name);
 
-#elif defined __EMSCRIPTEN__ && !ENABLE_QT5
+#elif defined __EMSCRIPTEN__
 
-// This branch is mainly for building for WASM, and especially for
-// Collabora Online in the browser, where code from core and Collabora
-// Online is compiled to WASM and linked into a single WASM binary.
-// (Not for Allotropia's Qt-based LibreOffice in the browser.)
+// This branch is for building for WASM, where everything is linked into a
+// single binary. It used to exclude the Qt-based build, on the assumption
+// that it could find these symbols some other way. It cannot: with dynamic
+// loading disabled, the dlsym fallback below returns nothing, the builder
+// silently creates a plain window in place of the custom one, and the first
+// code that casts it to what the .ui file asked for dereferences null. That
+// is what a notebookbar does, so a Qt WASM build could never show one.
 
 // When building core for WASM it doesn't use the same
 // solenv/bin/native-code.py thing as the mobile apps, even if in both
@@ -1096,7 +1099,7 @@ VclBuilder::customMakeWidget GetCustomMakeWidget(const OUString& rName)
         else
             pFunction = reinterpret_cast<VclBuilder::customMakeWidget>(
                 aI->second->getFunctionSymbol(sFunction));
-#elif !HAVE_FEATURE_DESKTOP || (defined __EMSCRIPTEN__ && !ENABLE_QT5)
+#elif !HAVE_FEATURE_DESKTOP || defined __EMSCRIPTEN__
         // This ifdef branch is mainly for building for either the
         // Android or iOS apps, or the Collabora Online as WASM thing.
         pFunction = lo_get_custom_widget_func(sFunction.toUtf8().getStr());
