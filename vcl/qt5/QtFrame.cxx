@@ -1124,6 +1124,10 @@ void QtFrame::UpdateSettings(AllSettings& rSettings)
             style.SetUseFlatBorders(true);
             style.SetUseFlatMenus(true);
 
+            // Underlined access keys are a desktop convention. In a browser
+            // there is no Alt key to go with them, so they are only noise.
+            style.SetOptions(style.GetOptions() | StyleSettingsOptions::NoMnemonics);
+
             // Set3DColors derives light/shadow from one colour; giving it the
             // surface colour is what removes the engraved edges.
             style.Set3DColors(aSurface);
